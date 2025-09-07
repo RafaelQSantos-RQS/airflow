@@ -22,7 +22,7 @@ POSTGRES_EXTERNAL_VOLUME_NAME   ?= airflow-database-volume
 	help setup prune \
 	up down rebuild build restart sync status logs pull validate \
 	deploy pull-prod up-prod down-prod restart-prod validate-prod \
-	_check-env-exists _create-env-from-template _create-network-if-not-exists _create-volume-if-not-exists
+	_check-env-exists _create-env-from-template _create-network-if-not-exists _create-volume-if-not-exists _create-dir-if-not-exists
 
 help: ## [GEN] 🤔 Show this help message
 	@echo "\033[1;33mAvailable commands (general):\033[0m"
@@ -48,6 +48,7 @@ setup: ## [GEN] 🛠️ Prepare the enviroment
 	@$(MAKE) _init-env
 	@$(MAKE) _create-network-if-not-exists
 	@$(MAKE) _create-volume-if-not-exists
+	@$(MAKE) _create-dir-if-not-exists
 	@echo "The environment is ready. ☑️"
 
 _check-env-exists:
@@ -95,6 +96,15 @@ _create-volume-if-not-exists:
 	@docker volume inspect $(POSTGRES_EXTERNAL_VOLUME_NAME) >/dev/null 2>&1 || \
 		(echo "==> Volume $(POSTGRES_EXTERNAL_VOLUME_NAME) not found. Creating..." && docker volume create $(POSTGRES_EXTERNAL_VOLUME_NAME))
 	@echo "✅ Volume $(POSTGRES_EXTERNAL_VOLUME_NAME) is ready."
+
+_create-dir-if-not-exists:
+	@echo "==> Creating directories, if they don't exist: ./dags ./plugins ./logs..."
+	@mkdir -p ./dags ./plugins ./logs
+
+	@echo "==> Changing ownership of ./dags ./plugins ./logs to the current user..."
+	@chown -R $$(id -u):$$(id -g) ./dags ./plugins ./logs
+
+	@echo "✅ Directories are ready."
 
 sync: ## [GEN] ❗️ Sync with origin/main (discards local changes!)
 	@read -p "⚠️ This will discard all local changes. Are you sure? (y/N) " -n 1 -r; \
