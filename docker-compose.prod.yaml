@@ -1,0 +1,61 @@
+services:
+  apiserver:
+    ports: !override []
+    labels:
+      # --- General Settings ---
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+
+      # --- Router Settings ---
+      - "traefik.http.routers.airflow-apiserver.rule=Host(`${APISERVER_DOMAIN}`)"
+      - "traefik.http.routers.airflow-apiserver.entrypoints=websecure"
+      - "traefik.http.routers.airflow-apiserver.service=airflow-apiserver"
+      - "traefik.http.routers.airflow-apiserver.tls=true"
+
+      # --- Services Settings ---
+      - "traefik.http.services.airflow-apiserver.loadbalancer.server.port=8080"
+      - "traefik.http.services.airflow-apiserver.loadbalancer.server.scheme=http"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+  worker:
+    deploy:
+      mode: replicated
+      replicas: ${WORKER_COUNT:-1}
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+
+  flower:
+    ports: !override []
+    labels:
+      # --- General Settings ---
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+
+      # --- Router Settings ---
+      - "traefik.http.routers.airflow-flower.rule=Host(`${FLOWER_DOMAIN}`)"
+      - "traefik.http.routers.airflow-flower.entrypoints=websecure"
+      - "traefik.http.routers.airflow-flower.service=airflow-flower"
+      - "traefik.http.routers.airflow-flower.tls=true"
+
+      # --- Services Settings ---
+      - "traefik.http.services.airflow-flower.loadbalancer.server.port=5555"
+      - "traefik.http.services.airflow-flower.loadbalancer.server.scheme=http"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M

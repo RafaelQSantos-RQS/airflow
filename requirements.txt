@@ -1,0 +1,8 @@
+apache-airflow[celery]
+apache-airflow[postgres]
+apache-airflow[microsoft-mssql]
+apache-airflow[odbc]
+apache-airflow[redis]
+apache-airflow[http]
+apache-airflow[smtp]
+apache-airflow-providers-fab[common.compat]

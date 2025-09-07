@@ -1,0 +1,33 @@
+x-airflow-dev-overrides:
+  &airflow-dev-overrides
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      AIRFLOW_VERSION: ${AIRFLOW_VERSION:-3.0.6}
+      PYTHON_VERSION: ${PYTHON_VERSION:-3.12}
+    
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./plugins:/opt/airflow/plugins
+    - ./logs:/opt/airflow/logs
+
+services:
+  apiserver:
+    <<: *airflow-dev-overrides
+    ports:
+      - "${AIRFLOW__API_SERVER__EXPOSE_PORT:-8080}:8080"
+  scheduler:
+    <<: *airflow-dev-overrides
+  dag-processor:
+    <<: *airflow-dev-overrides
+  worker:
+    <<: *airflow-dev-overrides
+  triggerer:
+    <<: *airflow-dev-overrides
+  init:
+    <<: *airflow-dev-overrides
+  flower:
+    <<: *airflow-dev-overrides
+    ports:
+      - "${AIRFLOW__FLOWER__EXPOSE_PORT:-5555}:5555"
